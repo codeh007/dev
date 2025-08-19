@@ -5,7 +5,7 @@
   },
   "waitFor": "onCreateCommand",
   "updateContentCommand": "",
-  "postCreateCommand": "npm i -g gomtm-cli",
+  "postCreateCommand": "sudo npm i -g gomtm-cli",
   "postAttachCommand": {
     "server": "npm run dev"
   },
@@ -17,10 +17,10 @@
     }
   },
   "portsAttributes": {
-    "3000": {
+    "8080": {
       "label": "Application",
       "onAutoForward": "openPreview"
     }
   },
-  "forwardPorts": [3000]
+  "forwardPorts": [8080]
 }
