@@ -7,7 +7,7 @@
   "updateContentCommand": "",
   "postCreateCommand": "sudo npm i -g gomtm-cli",
   "postAttachCommand": {
-    "server": "npm run dev"
+    "server": ""
   },
   "privileged": true,
   "customizations": {
