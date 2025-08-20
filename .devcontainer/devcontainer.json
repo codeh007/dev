@@ -9,6 +9,7 @@
   "postAttachCommand": {
     "server": "npm run dev"
   },
+  "privileged": true,
   "customizations": {
     "codespaces": {
       "openFiles": [
