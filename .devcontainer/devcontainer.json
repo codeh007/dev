@@ -23,5 +23,14 @@
       "onAutoForward": "openPreview"
     }
   },
-  "forwardPorts": [8080]
+  
+  "forwardPorts": [8080],
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "moby": true,
+      "rootless": false
+    }
+  },
+  "overrideCommand": false
 }
