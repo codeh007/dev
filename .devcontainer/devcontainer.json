@@ -26,11 +26,9 @@
   
   "forwardPorts": [8080],
   "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "version": "latest",
-      "moby": true,
-      "rootless": false
+    "ghcr.io/devcontainers/features/docker-in-docker:1": {
+      "version": "latest"
     }
   },
-  "overrideCommand": false
+  "remoteUser": "user"
 }
