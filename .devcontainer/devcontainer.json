@@ -1,55 +1,22 @@
-// .devcontainer/devcontainer.json
 {
   "name": "GoMTM Dev Environment",
-  // 使用本地 Dockerfile 构建，或者指向 GitHub Actions 构建好的最终镜像
-  // 如果你有 GitHub Actions 自动推送到 ghcr.io，这里可以改成 "image": "ghcr.io/codeh007/dev:latest"
-  "build": {
-    "dockerfile": "Dockerfile",
-    "context": "."
-  },
+  // 这里直接指向你刚刚构建好的镜像 URL
+  // 注意：如果你 fork 了仓库，这里的 codeh007 需要改成你的用户名，或者保持动态
+  "image": "ghcr.io/codeh007/dev:latest",
   
-  // 硬性要求：必须支持 Docker
-  // 使用官方 Feature 实现 Docker-in-Docker，这是最稳定、官方推荐的方式
+  // 删除原本的 "build" 块，或者将其注释掉
+  // "build": { ... },
+
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
-      "enableNonRootDocker": "true", // 允许非 root 用户使用 docker
-      "moby": "true" // 使用 Moby 引擎 (标准 Docker)
+      "enableNonRootDocker": "true",
+      "moby": "true"
     }
   },
-
-  // 给予容器特权，这对运行 Docker 也是必须的
-  "privileged": true,
-
   "hostRequirements": {
     "cpus": 4
   },
-
-  // 这里的命令在容器创建后运行。
-  // 因为我们已经把 npm install 移到了 Dockerfile 里，这里可以留空，或者仅仅做一些简单的配置
-  "postCreateCommand": "docker --version && gomtm-cli --version",
-
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        // 推荐安装 Docker 插件，方便用户管理镜像
-        "ms-azuretools.vscode-docker"
-      ]
-    },
-    "codespaces": {
-      "openFiles": [
-        "README.md"
-      ]
-    }
-  },
-
-  "portsAttributes": {
-    "8080": {
-      "label": "Application",
-      "onAutoForward": "openPreview"
-    }
-  },
-  "forwardPorts": [8080],
-
+  "privileged": true,
   "remoteUser": "user"
 }
