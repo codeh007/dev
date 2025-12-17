@@ -7,7 +7,7 @@ FROM gitgit188/gomtm:latest
 USER root
 
 # 解决痛点：预先安装 gomtm-cli，这样启动 Codespaces 时就不用等了
-RUN npm i -g gomtm-cli
+RUN sudo npm i -g gomtm-cli
 
 # 如果你的基础镜像没有 sudo，这里可能需要安装 sudo，
 # 但通常 Codespaces 推荐的镜像都需要 sudo 支持。
