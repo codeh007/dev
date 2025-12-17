@@ -7,11 +7,18 @@
   // 删除原本的 "build" 块，或者将其注释掉
   // "build": { ... },
 
+  // "features": {
+  //   "ghcr.io/devcontainers/features/docker-in-docker:2": {
+  //     "version": "latest",
+  //     "enableNonRootDocker": "true",
+  //     "moby": "true"
+  //   }
+  // },
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
-      "enableNonRootDocker": "true",
-      "moby": "true"
+      "moby": false,
+      "enableNonRootDocker": "true"
     }
   },
   "hostRequirements": {
