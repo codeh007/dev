@@ -25,5 +25,5 @@
     "cpus": 4
   },
   "privileged": true,
-  "remoteUser": "user"
+  "remoteUser": "code"
 }
