@@ -17,6 +17,7 @@
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
+      // 提示： 由于 镜像使用了交新的 debian 版本，导致不支持moby
       "moby": false,
       "enableNonRootDocker": "true"
     }
@@ -25,5 +26,6 @@
     "cpus": 4
   },
   "privileged": true,
+  //提示： 应当跟容器内置的用户名对应，否则会出错。
   "remoteUser": "code"
 }
