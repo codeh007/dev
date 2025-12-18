@@ -46,5 +46,5 @@
   ],
 
   // 可选：连接后自动在一个终端 Split 中 tail 日志，或者只是运行一次提示
-  "postAttachCommand": "echo 'Checking gomtm server logs...'; tail -n 10 /tmp/gomtm-server.log"
+  "postAttachCommand": "gomtm install --dev"
 }
