@@ -5,16 +5,7 @@
   //"image": "ghcr.io/codeh007/dev:latest",
   "image": "docker.io/gitgit188/gomtm:latest",
   
-  // 删除原本的 "build" 块，或者将其注释掉
   // "build": { ... },
-
-  // "features": {
-  //   "ghcr.io/devcontainers/features/docker-in-docker:2": {
-  //     "version": "latest",
-  //     "enableNonRootDocker": "true",
-  //     "moby": "true"
-  //   }
-  // },
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
@@ -29,7 +20,6 @@
   "privileged": true,
   //提示： 应当跟容器内置的用户名对应，否则会出错。
   "remoteUser": "code",
-  // ==================== 修改开始 ====================
   // 覆盖容器的默认启动行为
   // 1. 使用 gomtm entrypoint 作为入口
   // 2. 传递 --mtgate-url 参数以触发服务器后台启动
@@ -57,5 +47,4 @@
 
   // 可选：连接后自动在一个终端 Split 中 tail 日志，或者只是运行一次提示
   // "postAttachCommand": "echo 'Checking gomtm server logs...'; tail -n 10 /tmp/gomtm-server.log"
-  // ==================== 修改结束 ====================
 }
