@@ -3,7 +3,7 @@
   // 这里直接指向你刚刚构建好的镜像 URL
   // 注意：如果你 fork 了仓库，这里的 codeh007 需要改成你的用户名，或者保持动态
   //"image": "ghcr.io/codeh007/dev:latest",
-  "image": "gitgit188/gomtm:latest",
+  "image": "docker.io/gitgit188/gomtm:latest",
   
   // 删除原本的 "build" 块，或者将其注释掉
   // "build": { ... },
