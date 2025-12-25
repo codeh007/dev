@@ -12,6 +12,14 @@
       "dockerDashComposeVersion": "v2"
     }
   },
+  "mounts": [
+    // 方案 A: 如果你想利用 Codespaces 的临时空间 (非持久化，重启后数据丢失，但空间大)
+    "source=docker-data-hack,target=/var/lib/docker,type=volume",
+    
+    // 方案 B (推荐): 利用工作区的大磁盘 (持久化)
+    // 注意：这会在你的项目目录下创建一个 .docker-data 文件夹，可能会很大
+    // "source=${localWorkspaceFolder}/.docker-data,target=/var/lib/docker,type=bind"
+  ],
 
   "hostRequirements": {
     "cpus": 4
