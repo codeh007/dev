@@ -1,6 +1,6 @@
 {
   "name": "GoMTM Dev Environment",
-  "image": "docker.io/gitgit188/gomtm:v0.8.1771",
+  "image": "docker.io/gitgit188/gomtm:v0.8.1775",
   "privileged": true,
   "remoteUser": "code",
 
