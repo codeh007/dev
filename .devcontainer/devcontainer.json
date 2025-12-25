@@ -1,6 +1,6 @@
 {
   "name": "GoMTM Dev Environment",
-  "image": "docker.io/gitgit188/gomtm:v0.8.1740",
+  "image": "docker.io/gitgit188/gomtm:v0.8.1771",
   "privileged": true,
   "remoteUser": "code",
 
@@ -8,7 +8,7 @@
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
       // 必须加回 false，因为你的镜像被识别为 Debian Trixie
-      "moby": false, 
+      // "moby": false, 
       "dockerDashComposeVersion": "v2"
     }
   },
