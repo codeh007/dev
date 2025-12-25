@@ -7,7 +7,7 @@
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
-      // 必须加回 false，因为你的镜像被识别为 Debian Trixie
+      // Debian 12 (Bookworm) 默认支持 Moby，注释掉是对的
       // "moby": false, 
       "dockerDashComposeVersion": "v2"
     }
@@ -17,13 +17,12 @@
     "cpus": 4
   },
 
-  // 重要：保持为 false 或删除此行，允许 VS Code 处理命令
-  "overrideCommand": false,
+  // 🔴 修正 1：改为 true，告诉 VS Code 我们要覆盖默认的 CMD
+  "overrideCommand": true,
 
-  // !!! 绝对不要解开这个注释 !!!
-  // 保留注释状态，让 docker-in-docker 的初始化脚本作为 PID 1 运行
-  // 这样才能修复权限问题
-  // "entrypoint": [ ... ],
+  // 🔴 修正 2：显式指定一个“不死”的命令
+  // docker-in-docker 的脚本会作为 entrypoint 运行，然后它会执行这里的 command
+  "command": ["sleep", "infinity"],
 
   "customizations": {
     "vscode": {
@@ -33,9 +32,9 @@
     }
   },
 
-  // 使用 postStartCommand 启动你的 gomtm
-  // 这里的命令会在 docker 初始化完成后执行
-  "postStartCommand": "sudo nohup gomtm entrypoint --mtgate-url=https://mtgateapi.yuepa8.com > /tmp/gomtm.log 2>&1 &",
+  // 🔴 修正 3：确保日志重定向正确，避免 permission denied 或找不到路径
+  // 建议输出到 /tmp 或用户目录下
+  "postStartCommand": "sudo nohup gomtm entrypoint --mtgate-url=https://mtgateapi.yuepa8.com > /tmp/gomtm-start.log 2>&1 &",
 
   "postAttachCommand": "gomtm upgrade && gomtm install --dev"
 }
