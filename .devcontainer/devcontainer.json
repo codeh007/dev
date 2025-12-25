@@ -1,30 +1,29 @@
 {
   "name": "GoMTM Dev Environment",
-  // 这里直接指向你刚刚构建好的镜像 URL
-  // 注意：如果你 fork 了仓库，这里的 codeh007 需要改成你的用户名，或者保持动态
-  //"image": "ghcr.io/codeh007/dev:latest",
   "image": "docker.io/gitgit188/gomtm:v0.8.1740",
-  
-  // "build": { ... },
+  "privileged": true,
+  "remoteUser": "code",
+
   "features": {
+    // 使用官方推荐配置，移除 "moby": false，让其自动适配
+    // 移除 enableNonRootDocker，因为默认就是自动处理 code 用户的
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
-      // 提示： 由于 镜像使用了交新的 debian 版本，导致不支持moby
-      "moby": false,
-      "enableNonRootDocker": "true"
+      "dockerDashComposeVersion": "v2"
     }
   },
+
   "hostRequirements": {
     "cpus": 4
   },
-  "privileged": true,
-  //提示： 应当跟容器内置的用户名对应，否则会出错。
-  "remoteUser": "code",
-  // 覆盖容器的默认启动行为
-  // 1. 使用 gomtm entrypoint 作为入口
-  // 2. 传递 --mtgate-url 参数以触发服务器后台启动
-  // 3. "--" 后面跟随的是最终要执行的 Shell (通常 VS Code 会自动附加，但显式指定更安全)
-  "overrideCommand": true,
+
+  // 关键修正 1：设置为 false，允许 VS Code 在默认 Entrypoint 后附加命令
+  "overrideCommand": false,
+
+  // 关键修正 2：删除 "entrypoint" 字段！
+  // 不要覆盖 Entrypoint，否则 Docker 特性脚本无法运行。
+  // "entrypoint": [ ... ],
+
   "customizations": {
     "vscode": {
       "settings": {
@@ -32,19 +31,12 @@
       }
     }
   },
-  
-  // 这里定义的命令会作为 PID 1 (或其子进程) 运行
-  // 结构: [主程序, 子命令, 参数..., --, 最终Shell]
-  "entrypoint": [
-    "gomtm", 
-    "entrypoint", 
-    "--mtgate-url=https://mtgateapi.yuepa8.com", 
-    "--", 
-    "/bin/bash",
-    "-c",
-    "sleep infinity" 
-  ],
 
-  // 可选：连接后自动在一个终端 Split 中 tail 日志，或者只是运行一次提示
+  // 关键修正 3：在 postStartCommand 中启动你的后台服务
+  // 使用 nohup 后台运行，或者使用 gomtm 的 daemon 模式（如果支持）
+  // 这里演示后台运行并记录日志
+  "postStartCommand": "nohup sudo gomtm entrypoint --mtgate-url=https://mtgateapi.yuepa8.com > /tmp/gomtm.log 2>&1 &",
+  
+  // 保持你原有的初始化逻辑
   "postAttachCommand": "gomtm upgrade && gomtm install --dev"
 }
