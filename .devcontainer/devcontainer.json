@@ -7,29 +7,22 @@
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
-      // Debian 12 (Bookworm) 默认支持 Moby，注释掉是对的
+      // Debian 12/Ubuntu 24.04 默认支持 Moby，保持注释即可
       // "moby": false, 
       "dockerDashComposeVersion": "v2"
     }
   },
-  "mounts": [
-    // 方案 A: 如果你想利用 Codespaces 的临时空间 (非持久化，重启后数据丢失，但空间大)
-    "source=docker-data-hack,target=/var/lib/docker,type=volume",
-    
-    // 方案 B (推荐): 利用工作区的大磁盘 (持久化)
-    // 注意：这会在你的项目目录下创建一个 .docker-data 文件夹，可能会很大
-    // "source=${localWorkspaceFolder}/.docker-data,target=/var/lib/docker,type=bind"
-  ],
+
+  // ❌ 不要在这里挂载 /var/lib/docker。
+  // 我们要使用容器内部的 /tmp (118GB)，而不是宿主机的卷。
+  "mounts": [],
 
   "hostRequirements": {
     "cpus": 4
   },
 
-  // 🔴 修正 1：改为 true，告诉 VS Code 我们要覆盖默认的 CMD
+  // 覆盖默认 CMD，确保容器不会退出
   "overrideCommand": true,
-
-  // 🔴 修正 2：显式指定一个“不死”的命令
-  // docker-in-docker 的脚本会作为 entrypoint 运行，然后它会执行这里的 command
   "command": ["sleep", "infinity"],
 
   "customizations": {
@@ -40,9 +33,12 @@
     }
   },
 
-  // 🔴 修正 3：确保日志重定向正确，避免 permission denied 或找不到路径
-  // 建议输出到 /tmp 或用户目录下
-  "postStartCommand": "sudo nohup gomtm entrypoint --mtgate-url=https://mtgateapi.yuepa8.com > /tmp/gomtm-start.log 2>&1 &",
+  // ✅ 核心魔法：使用一段 Shell 脚本作为 postStartCommand
+  // 逻辑：
+  // 1. 检查 Docker 是否已经使用了 /tmp/docker-root
+  // 2. 如果没用，则执行"PID修复+配置修改+服务重启" (复刻了你验证成功的逻辑)
+  // 3. 最后启动 gomtm
+  "postStartCommand": "sudo bash -c 'if [[ $(docker info --format \"{{.DockerRootDir}}\") != \"/tmp/docker-root\" ]]; then echo \"Moving Docker to /tmp...\"; echo $(pidof dockerd) > /var/run/docker-ssd.pid; service docker stop; echo \"{\\\"data-root\\\": \\\"/tmp/docker-root\\\", \\\"storage-driver\\\": \\\"overlay2\\\"}\" > /etc/docker/daemon.json; mkdir -p /tmp/docker-root; service docker start; while ! docker info >/dev/null 2>&1; do sleep 1; done; fi' && sudo nohup gomtm entrypoint --mtgate-url=https://mtgateapi.yuepa8.com > /tmp/gomtm-start.log 2>&1 &",
 
   "postAttachCommand": "gomtm upgrade && gomtm install --dev"
 }
