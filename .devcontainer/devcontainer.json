@@ -7,21 +7,17 @@
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
-      // Debian 12/Ubuntu 24.04 默认支持 Moby，保持注释即可
-      // "moby": false, 
       "dockerDashComposeVersion": "v2"
     }
   },
 
-  // ❌ 不要在这里挂载 /var/lib/docker。
-  // 我们要使用容器内部的 /tmp (118GB)，而不是宿主机的卷。
+  // 确保没有挂载宿主机目录覆盖容器内的路径
   "mounts": [],
 
   "hostRequirements": {
     "cpus": 4
   },
 
-  // 覆盖默认 CMD，确保容器不会退出
   "overrideCommand": true,
   "command": ["sleep", "infinity"],
 
@@ -33,12 +29,15 @@
     }
   },
 
-  // ✅ 核心魔法：使用一段 Shell 脚本作为 postStartCommand
+  // 🚀 终极修正版 postStartCommand
   // 逻辑：
-  // 1. 检查 Docker 是否已经使用了 /tmp/docker-root
-  // 2. 如果没用，则执行"PID修复+配置修改+服务重启" (复刻了你验证成功的逻辑)
-  // 3. 最后启动 gomtm
-  "postStartCommand": "sudo bash -c 'if [[ $(docker info --format \"{{.DockerRootDir}}\") != \"/tmp/docker-root\" ]]; then echo \"Moving Docker to /tmp...\"; echo $(pidof dockerd) > /var/run/docker-ssd.pid; service docker stop; echo \"{\\\"data-root\\\": \\\"/tmp/docker-root\\\", \\\"storage-driver\\\": \\\"overlay2\\\"}\" > /etc/docker/daemon.json; mkdir -p /tmp/docker-root; service docker start; while ! docker info >/dev/null 2>&1; do sleep 1; done; fi' && sudo nohup gomtm entrypoint --mtgate-url=https://mtgateapi.yuepa8.com > /tmp/gomtm-start.log 2>&1 &",
+  // 1. 判断是否已经是软连接，如果是则跳过。
+  // 2. 修正 PID 以便 service 命令能控制。
+  // 3. 停止 Docker。
+  // 4. 将 /var/lib/docker 的现有数据(含证书)完整移动到 /tmp/docker-root。
+  // 5. 删除原目录，建立从 /var/lib/docker 到 /tmp/docker-root 的软连接。
+  // 6. 启动 Docker (此时它以为自己还在写 /var/lib/docker，实际上在 /tmp)。
+  "postStartCommand": "sudo bash -c 'if [ ! -L \"/var/lib/docker\" ]; then echo \"⚙️ Migrating Docker to /tmp via Symlink...\"; echo $(pidof dockerd) > /var/run/docker-ssd.pid; service docker stop; while pidof dockerd >/dev/null; do sleep 1; done; mkdir -p /tmp/docker-root; cp -a /var/lib/docker/. /tmp/docker-root/; rm -rf /var/lib/docker; ln -s /tmp/docker-root /var/lib/docker; service docker start; while ! docker info >/dev/null 2>&1; do sleep 1; done; echo \"✅ Migration done.\"; else echo \"✅ Already migrated.\"; fi' && sudo nohup gomtm entrypoint --mtgate-url=https://mtgateapi.yuepa8.com > /tmp/gomtm-start.log 2>&1 &",
 
   "postAttachCommand": "gomtm upgrade && gomtm install --dev"
 }
