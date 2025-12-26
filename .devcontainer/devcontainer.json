@@ -35,7 +35,7 @@
   // 4. 【关键】执行 umount /var/lib/docker。这一步彻底断开了与 32GB 磁盘的连接。
   // 5. 删除残留目录，建立指向 /tmp/docker-root 的软连接。
   // 6. 启动 Docker。
-  "postStartCommand": "sudo bash -c 'if mountpoint -q /var/lib/docker; then echo \"⚙️ Unmounting and linking to /tmp...\"; echo $(pidof dockerd) > /var/run/docker-ssd.pid; service docker stop; while pidof dockerd >/dev/null; do sleep 1; done; umount /var/lib/docker; rm -rf /var/lib/docker; mkdir -p /tmp/docker-root; ln -s /tmp/docker-root /var/lib/docker; service docker start; while ! docker info >/dev/null 2>&1; do sleep 1; done; echo \"✅ Migration done.\"; else echo \"✅ Already migrated.\"; fi' && sudo nohup gomtm entrypoint --mtgate-url=https://mtgateapi.yuepa8.com > /tmp/gomtm-start.log 2>&1 &",
+  "postStartCommand": "sudo bash -c 'if mountpoint -q /var/lib/docker; then echo \"⚙️ Unmounting and linking to /tmp...\"; echo $(pidof dockerd) > /var/run/docker-ssd.pid; service docker stop; while pidof dockerd >/dev/null; do sleep 1; done; umount /var/lib/docker; rm -rf /var/lib/docker; mkdir -p /tmp/docker-root; ln -s /tmp/docker-root /var/lib/docker; service docker start; while ! docker info >/dev/null 2>&1; do sleep 1; done; echo \"✅ Migration done.\"; else echo \"✅ Already migrated.\"; fi'",
 
   "postAttachCommand": "gomtm upgrade && gomtm install --dev"
 }
