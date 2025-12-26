@@ -11,9 +11,7 @@
     }
   },
 
-  // 确保没有挂载宿主机目录覆盖容器内的路径
   "mounts": [],
-
   "hostRequirements": {
     "cpus": 4
   },
@@ -29,15 +27,15 @@
     }
   },
 
-  // 🚀 终极修正版 postStartCommand
-  // 逻辑：
-  // 1. 判断是否已经是软连接，如果是则跳过。
-  // 2. 修正 PID 以便 service 命令能控制。
+  // 🚀 核心修复：使用 mount --bind 替代软连接
+  // 逻辑解析：
+  // 1. 检查是否已经挂载过了 (通过 /proc/mounts)。
+  // 2. 修复 PID 以便 service 命令能工作。
   // 3. 停止 Docker。
-  // 4. 将 /var/lib/docker 的现有数据(含证书)完整移动到 /tmp/docker-root。
-  // 5. 删除原目录，建立从 /var/lib/docker 到 /tmp/docker-root 的软连接。
-  // 6. 启动 Docker (此时它以为自己还在写 /var/lib/docker，实际上在 /tmp)。
-  "postStartCommand": "sudo bash -c 'if [ ! -L \"/var/lib/docker\" ]; then echo \"⚙️ Migrating Docker to /tmp via Symlink...\"; echo $(pidof dockerd) > /var/run/docker-ssd.pid; service docker stop; while pidof dockerd >/dev/null; do sleep 1; done; mkdir -p /tmp/docker-root; cp -a /var/lib/docker/. /tmp/docker-root/; rm -rf /var/lib/docker; ln -s /tmp/docker-root /var/lib/docker; service docker start; while ! docker info >/dev/null 2>&1; do sleep 1; done; echo \"✅ Migration done.\"; else echo \"✅ Already migrated.\"; fi' && sudo nohup gomtm entrypoint --mtgate-url=https://mtgateapi.yuepa8.com > /tmp/gomtm-start.log 2>&1 &",
+  // 4. 将原本 /var/lib/docker 里的证书和配置 增量复制(cp -au) 到 /tmp/docker-root。
+  // 5. 执行 mount --bind，把 /tmp 盖在 /var/lib/docker 上。
+  // 6. 启动 Docker。
+  "postStartCommand": "sudo bash -c 'if ! grep -q \"/tmp/docker-root /var/lib/docker\" /proc/mounts; then echo \"⚙️ Mounting /tmp over /var/lib/docker...\"; echo $(pidof dockerd) > /var/run/docker-ssd.pid; service docker stop; while pidof dockerd >/dev/null; do sleep 1; done; mkdir -p /tmp/docker-root; cp -au /var/lib/docker/. /tmp/docker-root/; mount --bind /tmp/docker-root /var/lib/docker; service docker start; while ! docker info >/dev/null 2>&1; do sleep 1; done; echo \"✅ Bind Mount Migration done.\"; else echo \"✅ Already mounted.\"; fi' && sudo nohup gomtm entrypoint --mtgate-url=https://mtgateapi.yuepa8.com > /tmp/gomtm-start.log 2>&1 &",
 
   "postAttachCommand": "gomtm upgrade && gomtm install --dev"
 }
