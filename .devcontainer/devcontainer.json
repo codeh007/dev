@@ -27,15 +27,15 @@
     }
   },
 
-  // 🚀 核心修复：使用 mount --bind 替代软连接
+  // 🚀 最终核心修复：卸载 (Umount) -> 软连接
   // 逻辑解析：
-  // 1. 检查是否已经挂载过了 (通过 /proc/mounts)。
+  // 1. 检查 /var/lib/docker 是否还是一个挂载点 (mountpoint -q)。
   // 2. 修复 PID 以便 service 命令能工作。
   // 3. 停止 Docker。
-  // 4. 将原本 /var/lib/docker 里的证书和配置 增量复制(cp -au) 到 /tmp/docker-root。
-  // 5. 执行 mount --bind，把 /tmp 盖在 /var/lib/docker 上。
+  // 4. 【关键】执行 umount /var/lib/docker。这一步彻底断开了与 32GB 磁盘的连接。
+  // 5. 删除残留目录，建立指向 /tmp/docker-root 的软连接。
   // 6. 启动 Docker。
-  "postStartCommand": "sudo bash -c 'if ! grep -q \"/tmp/docker-root /var/lib/docker\" /proc/mounts; then echo \"⚙️ Mounting /tmp over /var/lib/docker...\"; echo $(pidof dockerd) > /var/run/docker-ssd.pid; service docker stop; while pidof dockerd >/dev/null; do sleep 1; done; mkdir -p /tmp/docker-root; cp -au /var/lib/docker/. /tmp/docker-root/; mount --bind /tmp/docker-root /var/lib/docker; service docker start; while ! docker info >/dev/null 2>&1; do sleep 1; done; echo \"✅ Bind Mount Migration done.\"; else echo \"✅ Already mounted.\"; fi' && sudo nohup gomtm entrypoint --mtgate-url=https://mtgateapi.yuepa8.com > /tmp/gomtm-start.log 2>&1 &",
+  "postStartCommand": "sudo bash -c 'if mountpoint -q /var/lib/docker; then echo \"⚙️ Unmounting and linking to /tmp...\"; echo $(pidof dockerd) > /var/run/docker-ssd.pid; service docker stop; while pidof dockerd >/dev/null; do sleep 1; done; umount /var/lib/docker; rm -rf /var/lib/docker; mkdir -p /tmp/docker-root; ln -s /tmp/docker-root /var/lib/docker; service docker start; while ! docker info >/dev/null 2>&1; do sleep 1; done; echo \"✅ Migration done.\"; else echo \"✅ Already migrated.\"; fi' && sudo nohup gomtm entrypoint --mtgate-url=https://mtgateapi.yuepa8.com > /tmp/gomtm-start.log 2>&1 &",
 
   "postAttachCommand": "gomtm upgrade && gomtm install --dev"
 }
